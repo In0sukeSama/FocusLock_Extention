@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FocusLock</title>
+  <link rel="stylesheet" href="../css/popup.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     WELCOME SCREEN (shown only on first install)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="welcome-overlay hidden" id="welcomeOverlay">
+  <div class="welcome-logo">
+    <!-- Shield-lock icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/>
+      <rect x="9" y="11" width="6" height="5" rx="1"/>
+      <path d="M10 11V9a2 2 0 1 1 4 0v2"/>
+    </svg>
+  </div>
+  <h1 class="welcome-title">Welcome to <span>FocusLock</span></h1>
+  <p class="welcome-sub">Take control of your browsing. Set focus budgets for distracting sites and stay on track.</p>
+  <div class="welcome-steps">
+    <div class="welcome-step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Add sites to track</strong>
+        <span>Pick any website you want to limit — YouTube, Reddit, Twitter, Instagram, etc.</span>
+      </div>
+    </div>
+    <div class="welcome-step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Set your daily budget</strong>
+        <span>Choose how many minutes per day you want to allow on each site.</span>
+      </div>
+    </div>
+    <div class="welcome-step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Browse mindfully</strong>
+        <span>FocusLock tracks your time and blocks the site when your budget runs out.</span>
+      </div>
+    </div>
+  </div>
+  <button class="welcome-btn" id="welcomeGetStarted">Get Started →</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAUSE DURATION MODAL
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="pauseModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Pause Protection</h2>
+      <button class="icon-btn" id="closePauseModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:14px;">How long would you like to pause protection?</p>
+      <div class="pause-modal-options">
+        <button class="pause-option-btn" data-mins="5">5 minutes</button>
+        <button class="pause-option-btn" data-mins="15">15 minutes</button>
+        <button class="pause-option-btn" data-mins="30">30 minutes</button>
+        <button class="pause-option-btn" data-mins="60">1 hour</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADD / EDIT SITE MODAL
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="siteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="siteModalTitle">Add Site</h2>
+      <button class="icon-btn" id="closeSiteModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- URL -->
+      <div class="form-group">
+        <label class="form-label" for="siteUrl">Website URL</label>
+        <input class="form-input" id="siteUrl" type="text" placeholder="e.g. youtube.com" autocomplete="off" spellcheck="false">
+        <p class="form-error" id="siteUrlError">Please enter a valid domain.</p>
+      </div>
+      <!-- Time limit -->
+      <div class="form-group">
+        <label class="form-label">Daily Time Budget</label>
+        <div class="time-row">
+          <div>
+            <input class="form-input" id="siteHours" type="number" min="0" max="23" value="0" placeholder="0">
+            <p style="font-size:11px;color:var(--text-3);margin-top:3px;text-align:center;">Hours</p>
+          </div>
+          <div>
+            <input class="form-input" id="siteMins" type="number" min="1" max="59" value="30" placeholder="30">
+            <p style="font-size:11px;color:var(--text-3);margin-top:3px;text-align:center;">Minutes</p>
+          </div>
+        </div>
+        <p class="form-error" id="siteTimeError">Budget must be at least 1 minute.</p>
+      </div>
+      <!-- Days -->
+      <div class="form-group" id="daysGroup">
+        <label class="form-label">Active Days</label>
+        <div class="days-row" id="daysRow">
+          <div class="day-chip selected" data-day="0">Su</div>
+          <div class="day-chip selected" data-day="1">Mo</div>
+          <div class="day-chip selected" data-day="2">Tu</div>
+          <div class="day-chip selected" data-day="3">We</div>
+          <div class="day-chip selected" data-day="4">Th</div>
+          <div class="day-chip selected" data-day="5">Fr</div>
+          <div class="day-chip selected" data-day="6">Sa</div>
+        </div>
+      </div>
+      <!-- Always active toggle -->
+      <div class="always-toggle-row">
+        <span class="always-toggle-label">Always active (every day)</span>
+        <label class="toggle">
+          <input type="checkbox" id="alwaysActive" checked>
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="cancelSiteModal">Cancel</button>
+      <button class="btn btn-primary" id="saveSite">Save Site</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN APP
+     ═══════════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-logo">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="currentColor" opacity=".2"/>
+          <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/>
+          <rect x="9" y="11" width="6" height="5" rx="1"/>
+          <path d="M10 11V9a2 2 0 1 1 4 0v2"/>
+        </svg>
+      </div>
+      <span class="header-title">Focus<span>Lock</span></span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="helpBtn" title="Help">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </button>
+      <button class="icon-btn" id="settingsHeaderBtn" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main scrollable area -->
+  <div class="main">
+
+    <!-- ── DASHBOARD VIEW ──────────────────────────────────────────────── -->
+    <div class="view active" id="viewDashboard">
+
+      <!-- Status card -->
+      <div class="status-card" id="statusCard">
+        <div class="status-icon-wrap" id="statusIconWrap">
+          <svg id="statusIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="currentColor" opacity=".15"/>
+            <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+        </div>
+        <div class="status-info">
+          <div class="status-title" id="statusTitle">Protection is ON</div>
+          <div class="status-sub" id="statusSub">You're protected from distractions</div>
+        </div>
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="protectionToggle" checked>
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Blocked sites section -->
+      <div class="section-header">
+        <span class="section-title">Blocked Sites</span>
+        <button class="link-btn" id="addSiteBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Site
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" id="siteSearch" placeholder="Search sites…" type="text">
+      </div>
+
+      <!-- Sites list -->
+      <div class="sites-list" id="sitesList"></div>
+
+      <!-- Empty state -->
+      <div class="empty-state hidden" id="emptyState">
+        <div class="empty-state-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <h3>No sites added yet</h3>
+        <p>Tap <strong>+ Add Site</strong> to start tracking your focus budget for distracting websites.</p>
+      </div>
+
+      <!-- Today's Usage card -->
+      <div class="usage-card">
+        <div class="usage-card-header">
+          <div class="usage-card-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div>
+              <div class="usage-card-title">Today's Usage</div>
+              <div class="usage-card-sub">Total time on blocked sites</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="usage-big-time" id="totalUsageTime">0m</div>
+            <div class="usage-of" id="totalUsageOf">of 0m limit</div>
+          </div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="totalProgressBar" style="width:0%"></div>
+        </div>
+        <div class="progress-label" id="totalProgressLabel">0% of daily limit used</div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="action-row">
+        <button class="action-btn pause" id="pauseBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          Pause Protection
+        </button>
+        <button class="action-btn stop" id="stopBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+          Stop Protection
+        </button>
+      </div>
+
+    </div><!-- /viewDashboard -->
+
+    <!-- ── INSIGHTS VIEW ───────────────────────────────────────────────── -->
+    <div class="view" id="viewInsights">
+
+      <div class="section-header" style="margin-bottom:12px;">
+        <span class="section-title">Your Insights</span>
+        <span class="badge badge-purple" id="insightDateRange">Last 7 days</span>
+      </div>
+
+      <!-- Stats grid -->
+      <div class="insights-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="stat-card-label">Today</div>
+          <div class="stat-card-value" id="statToday">0m</div>
+          <div class="stat-card-sub">on blocked sites</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="stat-card-label">Weekly total</div>
+          <div class="stat-card-value" id="statWeekly">0m</div>
+          <div class="stat-card-sub">this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <div class="stat-card-label">Current streak</div>
+          <div class="stat-card-value" id="statStreak">0</div>
+          <div class="stat-card-sub">days focused</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          </div>
+          <div class="stat-card-label">Best streak</div>
+          <div class="stat-card-value" id="statBestStreak">0</div>
+          <div class="stat-card-sub">days record</div>
+        </div>
+      </div>
+
+      <!-- Weekly chart -->
+      <div class="week-chart-wrap">
+        <div class="week-chart-title">Daily usage this week</div>
+        <div class="week-bars" id="weekBars"></div>
+      </div>
+
+      <!-- Site breakdown -->
+      <div class="site-breakdown">
+        <div class="site-breakdown-header">Time by site today</div>
+        <div id="breakdownList"></div>
+      </div>
+
+    </div><!-- /viewInsights -->
+
+    <!-- ── SETTINGS VIEW ───────────────────────────────────────────────── -->
+    <div class="view" id="viewSettings">
+
+      <!-- Appearance -->
+      <div class="settings-section">
+        <div class="settings-section-title">Appearance</div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Dark Mode</div>
+            <div class="setting-sub">Switch to dark theme</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="settingDarkMode">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="settings-section">
+        <div class="settings-section-title">Notifications</div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Browser Notifications</div>
+            <div class="setting-sub">Warn before budget runs out</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="settingNotifications">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Auto-start on Browser Launch</div>
+            <div class="setting-sub">Protect from the moment you open Chrome</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="settingAutoStart">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Data -->
+      <div class="settings-section">
+        <div class="settings-section-title">Data</div>
+        <button class="settings-btn" id="exportDataBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Data
+        </button>
+        <button class="settings-btn" id="importDataBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Import Data
+        </button>
+        <input type="file" id="importFileInput" accept=".json" class="hidden">
+        <button class="settings-btn danger" id="resetDataBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.32"/></svg>
+          Reset All Data
+        </button>
+      </div>
+
+      <!-- About -->
+      <div class="settings-section">
+        <div class="settings-section-title">About</div>
+        <div class="setting-row">
+          <div class="setting-label">FocusLock</div>
+          <span class="badge badge-purple">v1.0.0</span>
+        </div>
+        <div class="setting-row" style="font-size:11.5px;color:var(--text-3);">
+          Stop doomscrolling. Stay focused.
+        </div>
+      </div>
+
+    </div><!-- /viewSettings -->
+
+  </div><!-- /main -->
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="dashboard" id="navDashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-btn" data-view="insights" id="navInsights">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Insights
+    </button>
+    <button class="nav-btn" data-view="settings" id="navSettings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- Load shared modules then popup logic -->
+<script src="../utils/constants.js"></script>
+<script src="../utils/helpers.js"></script>
+<script src="../js/popup.js"></script>
+</body>
+</html>

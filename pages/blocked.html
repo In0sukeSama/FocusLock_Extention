@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Site Blocked — FocusLock</title>
+  <link rel="stylesheet" href="../css/blocked.css">
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Illustration -->
+  <div class="illustration">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Shield gradient -->
+      <defs>
+        <linearGradient id="shieldGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#7C3AED"/>
+          <stop offset="100%" stop-color="#8B5CF6"/>
+        </linearGradient>
+      </defs>
+      <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"
+            fill="url(#shieldGrad)" opacity=".15" stroke="url(#shieldGrad)" stroke-width="1.5"/>
+      <rect x="8.5" y="11" width="7" height="6" rx="1.5" fill="url(#shieldGrad)"/>
+      <path d="M10 11V8.5a2 2 0 1 1 4 0V11" stroke="url(#shieldGrad)" stroke-width="2"
+            stroke-linecap="round"/>
+    </svg>
+    <div class="badge-dot">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Domain badge -->
+  <div class="domain-badge">
+    <img class="domain-favicon" id="domainFavicon" src="" alt="">
+    <span class="domain-name" id="domainName">site.com</span>
+  </div>
+
+  <!-- Headline -->
+  <h1>Budget <span>reached.</span></h1>
+  <p class="subtitle" id="subtitle">
+    You've used your full daily focus budget for this site.
+    Time to close the tab and do something meaningful.
+  </p>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-box-label">Time used</div>
+      <div class="stat-box-value" id="timeUsed">—</div>
+      <div class="stat-box-sub">today</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">Resets in</div>
+      <div class="stat-box-value" id="resetCountdown">—</div>
+      <div class="stat-box-sub">at midnight</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">Focus streak</div>
+      <div class="stat-box-value" id="streakValue">0</div>
+      <div class="stat-box-sub">days</div>
+    </div>
+  </div>
+
+  <!-- Quote -->
+  <div class="quote-box">
+    <div class="quote-icon">"</div>
+    <div class="quote-text" id="quoteText">
+      Almost everything will work again if you unplug it for a few minutes,
+      including you.
+    </div>
+    <div class="quote-author" id="quoteAuthor">— Anne Lamott</div>
+  </div>
+
+  <!-- Reset row -->
+  <div class="reset-row">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+    <span class="reset-text">
+      Access restores at midnight —
+      <span class="reset-countdown" id="resetTime">calculating…</span>
+    </span>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button class="btn-close" id="closeTabBtn">Close This Tab</button>
+    <button class="btn-back" disabled title="No going back — stay focused!">
+      ← Go Back (disabled)
+    </button>
+  </div>
+
+</div>
+
+<script src="../utils/constants.js"></script>
+<script src="../utils/helpers.js"></script>
+<script src="../js/blocked.js"></script>
+</body>
+</html>
